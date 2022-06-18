@@ -1,7 +1,6 @@
 class Game
     @board = Array.new(9)
-    @first_player = nil
-    @second_player = nil
+    @current_player = nil
 
     def self.setup_board()
         @board = @board.map.with_index {|square, index| square = index + 1}
@@ -67,49 +66,53 @@ class Game
             if(toss_guess == "H" || toss_guess == "h")
                 if(toss == 0)
                     puts "You guessed heads and won the toss. You go first."
-                    @first_player = Human.new("O")
-                    @second_player = Computer.new("X")
+                    return "human"
                 else
                     puts "You guessed heads and lost the toss. I go first."
-                    @first_player = Computer.new("X")
-                    @second_player = Human.new("O")
+                    return "computer"
+                    
                 end
                 done_cointoss = true
             elsif(toss_guess == "T" || toss_guess == "t")
                 if(toss == 0)
                     puts "You guessed tails and lost the toss. I go first."
-                    @first_player = Computer.new("X")
-                    @second_player = Human.new("O")
+                    return "computer"
+                   
                 else
                     puts "You guessed tails and won the toss. You go first."
-                    @first_player = Human.new("0")
-                    @second_player = Computer.new("X")
+                    return "human"
+                 
                 end
                 done_cointoss = true
             end
         end
     end
 
+
     def self.run()
-        
+        human = Human.new("O")
+        computer = Computer.new("X")
+
         setup_board()
-        decide_first_player()
-        if(!@first_player.is_computer)
+        if(decide_first_player() == "human")
+            @current_player = human
             print_board()
+        else
+            @current_player = computer
         end
+
         winner = false
-        while(!winner && !quit_game) do
-            @first_player.choose_move(get_board)
+        while(!winner) do
+            @current_player.choose_move(get_board)
             if(check_for_win())
-                puts check_for_win + " wins!"
+                @current_player.win_string
                 winner = true
                 break;
             end
-            @second_player.choose_move(get_board)
-            if(check_for_win())
-                puts check_for_win + " wins!"
-                winner = true
-                break;
+            if(@current_player == human)
+                @current_player = computer
+            else
+                @current_player = human
             end
             
         end
@@ -127,6 +130,36 @@ class Computer < Player
     def choose_move(board)
         puts "Choosing my move..."
         avail_moves = board.select{|square| square != "X" && square != "O"}
+        p avail_moves
+        if(avail_moves.count == 9)
+            # If I go first, take the middle square
+            board[4] = "X"
+            Game.print_board
+            return
+        else
+            avail_moves.each do |square|
+                temp = square
+                # Check to see if I can win
+                board[square - 1] = "X"
+                if(Game.check_for_win())
+                    Game.print_board
+                    return
+                else
+                    board[square - 1] = temp
+                end
+                # Check to see if I can stop opponent from winning
+                board[square - 1] = "O"
+                if(Game.check_for_win())
+                    board[square - 1] = symbol
+                    Game.print_board
+                    return
+                else
+                    board[square - 1] = temp
+                end
+            end 
+        end
+
+        # Just pick a random move then
         move =  avail_moves.sample
         if(move)
             board[move - 1] = symbol
@@ -134,8 +167,8 @@ class Computer < Player
         end
     end
 
-    def is_computer()
-        return true
+    def win_string()
+        puts "I win!"
     end
 end
 
@@ -161,8 +194,8 @@ class Human < Player
         end
     end
 
-    def is_computer()
-        return false
+    def win_string()
+        puts "You win!"
     end
 end
 
