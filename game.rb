@@ -52,6 +52,13 @@ class Game
         end
     end
 
+    def self.check_for_draw()
+        if @board.select{|square| square != "X" && square != "O"}.count > 0
+            return false
+        end
+        return true
+    end
+
     def self.get_board()
         return @board
     end
@@ -107,7 +114,10 @@ class Game
             if(check_for_win())
                 @current_player.win_string
                 winner = true
-                break;
+                break
+            elsif(check_for_draw())
+                puts "It was a draw!"
+                break
             end
             if(@current_player == human)
                 @current_player = computer
