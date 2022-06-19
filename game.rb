@@ -8,12 +8,15 @@ class Game
 
     def self.print_board()
         i = 0
-        line = ""
+        line = "|"
+        puts "-------------"
         @board.each do |square|
-            line += square.to_s
+            line += " #{square.to_s} "
+            line += "|"
             if(i == 2)
                 puts line
-                line = ""
+                puts "-------------"
+                line = "|"
                 i = 0
             else
                 i += 1
@@ -140,7 +143,6 @@ class Computer < Player
     def choose_move(board)
         puts "Choosing my move..."
         avail_moves = board.select{|square| square != "X" && square != "O"}
-        p avail_moves
         if(avail_moves.count == 9)
             # If I go first, take the middle square
             board[4] = "X"
